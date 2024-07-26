@@ -95,6 +95,9 @@ const RegistrationForm = () => {
                     {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
                 </div>
                 <button type="submit" className="btn">Register</button>
+                <div>
+                    <p>Already have an account? <a href="/">Login</a></p>
+                </div>
             </form>
         </div>
     );
