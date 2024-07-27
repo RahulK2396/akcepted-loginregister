@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import './RegistrationForm.css';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
+import { toast, ToastContainer, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
 const RegistrationForm = () => {
     const [formData, setFormData] = useState({
@@ -10,6 +15,24 @@ const RegistrationForm = () => {
     });
 
     const [errors, setErrors] = useState({});
+    const navigate = useNavigate();
+
+    const showToastMessage = (message) => {
+        toast.success(message, {
+          position: "top-right",
+          transition: Slide,
+          onClose: () => {
+            // Redirect to login page after the toast is closed
+            navigate('/');
+        },
+        });
+      };
+      const showToastErrorMessage = (message) => {
+        toast.error(message, {
+          position: "top-right",
+          transition: Slide,
+        });
+      };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -41,6 +64,21 @@ const RegistrationForm = () => {
         const formErrors = validate();
         if (Object.keys(formErrors).length === 0) {
             console.log('Form data:', formData);
+            createUserWithEmailAndPassword(auth, formData.email, formData.password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    console.log('User created:', user);
+                    showToastMessage("Account Created!");
+                    setErrors({});
+                    setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+                   
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.log('Error:', error.message,error.code);
+                    showToastErrorMessage(error.message);
+                });
         } else {
             setErrors(formErrors);
         }
@@ -99,6 +137,7 @@ const RegistrationForm = () => {
                     <p>Already have an account? <a href="/">Login</a></p>
                 </div>
             </form>
+            <ToastContainer />
         </div>
     );
 };
