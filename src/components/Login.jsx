@@ -3,8 +3,8 @@ import "./LoginPage.css"; // Import CSS file
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { toast, ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
-
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -16,10 +16,10 @@ const LoginPage = () => {
 
   const showToastMessage = (message) => {
     toast.success(message, {
-        position: "top-right",
-        transition: Slide
+      position: "top-right",
+      transition: Slide
     });
-};
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -54,27 +54,46 @@ const LoginPage = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    
+
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
     } else {
-        showToastMessage ("Login successful!");
-       setErrors({});
-      // Perform login logic here
-      console.log("Logging in with", email, password);
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in 
+          const user = userCredential.user;
+          showToastMessage("Login successful!", userCredential.user);
+          setErrors({});
+          // Perform login logic here
+          console.log("Logging in with", userCredential.user);
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          showToastErrorMessage(error.message);
+        });
+
     }
+  };
+
+  const showToastErrorMessage = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      transition: Slide,
+    });
   };
 
   const handleForgotPassword = () => {
 
     setForgotPassword(true);
-    
+
   };
 
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Perform forgot password logic here
     console.log("Password reset for", email);
     // setForgotPassword(false); // Close forgot password form
@@ -84,24 +103,28 @@ const LoginPage = () => {
     if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email is invalid";
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-        setErrors({});
-
-        try {
-          await auth.sendPasswordResetEmail(email);
+      setErrors({});
+      sendPasswordResetEmail(auth, email)
+        .then(() => {
+          // Password reset email sent!
           console.log("Password reset email sent!");
-          showToastMessage ("Email sent!");
-          
-        } catch (err) {
-          console.log('Error sending password reset email.');
-          
-        }
-      
-      
+          showToastMessage("Password reset email sent!");
+          // ..
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode, errorMessage);
+          showToastErrorMessage(error.message);
+          // ..
+        });
+
+
     }
   };
-    
-    
-  
+
+
+
 
   return (
     <div className="login-container">
@@ -130,9 +153,8 @@ const LoginPage = () => {
                 className={`form-control ${errors.password ? "error" : ""}`}
               />
               <i
-                className={`fas ${
-                  showPassword ? "fa-eye-slash" : "fa-eye"
-                } eye-icon`}
+                className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"
+                  } eye-icon`}
                 onClick={togglePasswordVisibility}
               ></i>
             </div>
@@ -169,10 +191,10 @@ const LoginPage = () => {
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
-          <button 
-        
-          type="submit"
-           className="btn">
+          <button
+
+            type="submit"
+            className="btn">
             Submit
           </button>
 
@@ -183,7 +205,7 @@ const LoginPage = () => {
       )}
       <ToastContainer />
     </div>
-    
+
   );
 };
 
