@@ -3,17 +3,24 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f0f2f5;
+    /* background-color: #f0f2f5; */
 
 }
 
+body{
+    background-image: linear-gradient(to top, #a8edea 0%, #fed6e3 100%) !important; 
+  overflow: hidden;
+  }
+
 .form {
-    background-color: white;
+    /* background-color: white; */
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     max-width: 400px;
     width: 100%;
+    box-shadow: #626161 0px 1.5px 1.5px 1.5px;
+    border: 0.5px solid black;
 }
 
 .form h2 {
